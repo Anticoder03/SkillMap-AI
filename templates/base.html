@@ -1,0 +1,161 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CareerPath AI{% endblock %}</title>
+  <meta name="description" content="AI-powered career discovery, skill-gap analysis and personalized learning roadmaps.">
+  <script src="{% static 'js/tailwind.js' %}"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+              400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+              800: '#3730a3', 900: '#312e81',
+            },
+          },
+          boxShadow: {
+            soft: '0 8px 30px rgba(0, 0, 0, 0.06)',
+            'soft-lg': '0 16px 44px rgba(0, 0, 0, 0.08)',
+          },
+        },
+      },
+    };
+    (function () {
+      const stored = localStorage.getItem('careerpath-theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (stored === 'dark' || (!stored && prefersDark)) { document.documentElement.classList.add('dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 antialiased min-h-screen flex flex-col transition-colors duration-300">
+
+  <nav class="sticky top-0 z-40 backdrop-blur border-b border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="{% url 'accounts:landing' %}" class="flex items-center gap-2 text-lg font-bold tracking-tight">
+          <span class="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-violet-600 text-white shadow-soft-lg">
+            <i class="fa-solid fa-route" aria-hidden="true"></i>
+          </span>
+          <span>CareerPath <span class="text-brand-600 dark:text-brand-400">AI</span></span>
+        </a>
+
+        <div class="hidden md:flex items-center gap-1 text-sm font-medium">
+          {% if user.is_authenticated %}
+            <a href="{% url 'accounts:dashboard' %}" class="nav-link {% if active_page == 'dashboard' %}nav-active{% endif %}">Dashboard</a>
+            <a href="{% url 'careers:list' %}" class="nav-link {% if active_page == 'careers' %}nav-active{% endif %}">Careers</a>
+            <a href="{% url 'assessment:start' %}" class="nav-link {% if active_page == 'assessment' %}nav-active{% endif %}">Assessment</a>
+            <a href="{% url 'roadmap:list' %}" class="nav-link {% if active_page == 'roadmap' %}nav-active{% endif %}">My Roadmap</a>
+          {% else %}
+            <a href="{% url 'careers:list' %}" class="nav-link">Careers</a>
+            <a href="#how-it-works" class="nav-link">How it works</a>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="theme-toggle" type="button" title="Toggle theme" class="btn-icon" aria-label="Toggle dark mode">
+            <i id="theme-icon-sun" class="fa-solid fa-sun hidden dark:inline"></i>
+            <i id="theme-icon-moon" class="fa-solid fa-moon dark:hidden"></i>
+          </button>
+
+          {% if user.is_authenticated %}
+            <div class="hidden sm:flex items-center gap-2">
+              <a href="{% url 'accounts:profile' %}" class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                <span class="grid place-items-center w-7 h-7 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-300 text-xs font-bold uppercase">
+                  {{ user.username|slice:":1" }}
+                </span>
+                <span class="hidden lg:inline">{{ user.username }}</span>
+              </a>
+              <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-3 py-2 rounded-xl text-sm font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition">
+                  <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i><span class="hidden sm:inline">Logout</span>
+                </button>
+              </form>
+            </div>
+          {% else %}
+            <a href="{% url 'accounts:login' %}" class="px-4 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">Sign in</a>
+            <a href="{% url 'accounts:register' %}" class="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-soft transition shadow-brand-600/30">Get started</a>
+          {% endif %}
+
+          <button id="mobile-menu-btn" class="md:hidden btn-icon" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur">
+      <div class="px-4 py-3 space-y-1 text-sm font-medium">
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:dashboard' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Dashboard</a>
+          <a href="{% url 'careers:list' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Careers</a>
+          <a href="{% url 'assessment:start' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Assessment</a>
+          <a href="{% url 'roadmap:list' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">My Roadmap</a>
+          <a href="{% url 'accounts:profile' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Profile</a>
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Sign in</a>
+          <a href="{% url 'accounts:register' %}" class="block px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">Get started</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  {% if messages %}
+    <div class="fixed top-20 right-4 z-50 space-y-2 max-w-sm w-full pointer-events-none">
+      {% for message in messages %}
+        <div id="toast-{{ forloop.counter }}" class="pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-soft-lg border
+          {% if message.tags == 'error' %}bg-rose-50 border-rose-200 text-rose-800
+          {% elif message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800
+          {% else %}bg-brand-50 border-brand-200 text-brand-800{% endif %}">
+          <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% elif message.tags == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %} mt-0.5"></i>
+          <p class="text-sm flex-1">{{ message }}</p>
+          <button type="button" class="text-xs opacity-50 hover:opacity-100" onclick="this.parentElement.remove()">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+    <script>
+      setTimeout(() => { document.querySelectorAll('[id^="toast-"]').forEach(el => el.remove()); }, 6000);
+    </script>
+  {% endif %}
+
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+    <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500 dark:text-slate-400">
+        <div class="flex items-center gap-2">
+          <span class="grid place-items-center w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-violet-600 text-white text-xs">
+            <i class="fa-solid fa-route"></i>
+          </span>
+          <span class="font-semibold text-slate-700 dark:text-slate-200">CareerPath AI</span>
+          <span class="text-xs">Career guidance powered by structured data + AI.</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span>© {% now "Y" %} CareerPath AI</span>
+          <span class="inline-flex items-center gap-1.5 text-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> All systems normal
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

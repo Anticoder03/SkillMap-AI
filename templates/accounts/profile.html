@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Your Profile — CareerPath AI{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-10">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Your Profile</h1>
+      <p class="text-slate-500 dark:text-slate-400 mt-1">Keep your profile fresh — it powers your career matches.</p>
+    </div>
+    <a href="{% url 'accounts:change_password' %}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-900 transition">
+      <i class="fa-solid fa-key"></i> Change password
+    </a>
+  </div>
+
+  {% if completeness %}
+  <div class="mb-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-soft">
+    <div class="flex items-center gap-4">
+      <div class="flex-1">
+        <div class="flex justify-between text-sm mb-1.5">
+          <span class="font-medium text-slate-700 dark:text-slate-200">Profile readiness</span>
+          <span class="text-brand-600 dark:text-brand-400 font-semibold">{{ completeness.percent }}% ({{ completeness.count }})</span>
+        </div>
+        <div class="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+          <div class="progress-bar h-2 rounded-full bg-gradient-to-r from-brand-500 to-violet-600 transition-all" style="width: {{ completeness.percent }}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="grid gap-6 lg:grid-cols-3">
+    <!-- Account + education -->
+    <form method="post" class="lg:col-span-2 space-y-6">
+      {% csrf_token %}
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-soft p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-id-badge text-brand-500"></i> Account details
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          {% for field in user_form %}
+            <div>
+              <label for="{{ field.id_for_label }}" class="input-label">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<p class="mt-1 text-xs text-rose-600">{{ error }}</p>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-soft p-6">
+        <h2 class="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-brand-500"></i> Education & experience
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          {% for field in profile_form %}
+            <div class="{% if field.name == 'bio' %}sm:col-span-2{% endif %}">
+              <label for="{{ field.id_for_label }}" class="input-label">{{ field.label }}</label>
+              {{ field }}
+              {% for error in field.errors %}<p class="mt-1 text-xs text-rose-600">{{ error }}</p>{% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-soft shadow-brand-600/30 transition">
+        <i class="fa-solid fa-floppy-disk mr-2"></i>Save profile
+      </button>
+    </form>
+
+    <!-- Skills & interests -->
+    <div class="space-y-4">
+      <a href="{% url 'accounts:change_password' %}" class="sm:hidden inline-flex w-full items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <i class="fa-solid fa-key"></i> Change password
+      </a>
+    </div>
+  </div>
+
+  <!-- Skills and interests editor -->
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-soft p-6">
+      <h2 class="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-code text-brand-500"></i> My skills
+      </h2>
+      {% if skills %}
+      <div class="space-y-2">
+        {% for us in skills %}
+        <div class="flex items-center justify-between gap-3 text-sm group">
+          <span class="font-medium text-slate-700 dark:text-slate-200">{{ us.skill.name }}</span>
+          {% include "partials/level_dots.html" with value=us.proficiency %}
+          <a href="{% url 'accounts:remove_skill' us.id %}" class="text-slate-300 dark:text-slate-600 hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></a>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-400">No skills added yet — a completed assessment will add them, or add below.</p>
+      {% endif %}
+      <hr class="my-4 border-slate-100 dark:border-slate-800">
+      <form method="post" action="{% url 'accounts:add_skill' %}" class="flex gap-2">
+        {% csrf_token %}
+        <select name="skill_id" class="input-field flex-1" required>
+          <option value="">Add a skill…</option>
+          {% for skill in all_skills %}
+            {% if skill.id not in possessed_skill_ids %}
+            <option value="{{ skill.id }}">{{ skill.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="number" name="proficiency" min="1" max="5" value="3" class="input-field w-20" required>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-slate-800 dark:bg-slate-700 text-white text-sm font-medium hover:bg-slate-700 transition">Add</button>
+      </form>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-soft p-6">
+      <h2 class="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-heart text-brand-500"></i> My interests
+      </h2>
+      {% if user_interests %}
+      <div class="space-y-2">
+        {% for ui in user_interests %}
+        <div class="flex items-center justify-between gap-3 text-sm group">
+          <span class="font-medium text-slate-700 dark:text-slate-200">{{ ui.interest.name }}</span>
+          {% include "partials/level_dots.html" with value=ui.level %}
+          <a href="{% url 'accounts:remove_interest' ui.id %}" class="text-slate-300 dark:text-slate-600 hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></a>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-slate-400">No interests yet — the assessment will surface them.</p>
+      {% endif %}
+      <hr class="my-4 border-slate-100 dark:border-slate-800">
+      <form method="post" action="{% url 'accounts:add_interest' %}" class="flex gap-2">
+        {% csrf_token %}
+        <select name="interest_id" class="input-field flex-1" required>
+          <option value="">Add an interest…</option>
+          {% for interest in all_interests %}
+            {% if interest.id not in possessed_interest_ids %}
+            <option value="{{ interest.id }}">{{ interest.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input type="number" name="level" min="1" max="5" value="3" class="input-field w-20" required>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-slate-800 dark:bg-slate-700 text-white text-sm font-medium hover:bg-slate-700 transition">Add</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

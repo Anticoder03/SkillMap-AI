@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}CareerPath AI — Discover Your Career Path{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 -z-10 bg-gradient-to-br from-brand-50 via-white to-violet-50 dark:from-slate-950 dark:via-slate-950 dark:to-brand-950/40"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 lg:pt-28 lg:pb-24 text-center">
+    <span class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"></span>
+      AI-powered career guidance
+    </span>
+    <h1 class="max-w-3xl mx-auto text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+      Find a Career Path <span class="bg-gradient-to-r from-brand-600 to-violet-600 bg-clip-text text-transparent">Built Around You</span>
+    </h1>
+    <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-600 dark:text-slate-300">
+      Answer a few questions. Understand your strengths. Get personalized career
+      recommendations and an AI-crafted learning roadmap you can start today.
+    </p>
+    <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+      <a href="{% url 'accounts:register' %}" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-soft-lg shadow-brand-600/30 transition">
+        Start Your Assessment <i class="fa-solid fa-arrow-right"></i>
+      </a>
+      <a href="{% url 'careers:list' %}" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:bg-white dark:hover:bg-slate-900 transition">
+        Browse Careers
+      </a>
+    </div>
+    <div class="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-slate-500 dark:text-slate-400">
+      <span><i class="fa-solid fa-circle-check text-brand-500 mr-1.5"></i>No AI required to start</span>
+      <span><i class="fa-solid fa-circle-check text-brand-500 mr-1.5"></i>Free & instant matches</span>
+      <span><i class="fa-solid fa-circle-check text-brand-500 mr-1.5"></i>Personalized roadmaps</span>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+  <div class="text-center max-w-2xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">How it works</h2>
+    <p class="mt-3 text-slate-600 dark:text-slate-300">Four steps from curious to career-ready.</p>
+  </div>
+  <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for step, title, text in steps %}
+    <div class="card-lift relative rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-soft">
+      <div class="text-sm font-bold text-white bg-gradient-to-br from-brand-500 to-violet-600 w-10 h-10 grid place-items-center rounded-xl mb-4">{{ step }}</div>
+      <h3 class="font-semibold text-lg text-slate-900 dark:text-white">{{ title }}</h3>
+      <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">{{ text }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Features -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+  <div class="rounded-3xl bg-slate-900 dark:bg-slate-900 text-white p-8 sm:p-12">
+    <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <h2 class="text-3xl font-bold">Everything you need to plan your career</h2>
+        <p class="mt-4 text-slate-300">
+          A hybrid engine — structured career data plus an explainable scoring system —
+          works with an AI layer to explain your matches and close your skill gaps.
+        </p>
+        <ul class="mt-6 space-y-3">
+          {% for icon, title, text in features %}
+          <li class="flex gap-3">
+            <span class="w-9 h-9 shrink-0 grid place-items-center rounded-lg bg-brand-500/20 text-brand-300"><i class="fa-solid fa-{{ icon }}"></i></span>
+            <div>
+              <p class="font-semibold">{{ title }}</p>
+              <p class="text-sm text-slate-400">{{ text }}</p>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="relative">
+        <div class="rounded-2xl bg-slate-800/70 border border-slate-700 p-6">
+          <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Sample match</p>
+          <div class="mt-4 flex items-center justify-between">
+            <div>
+              <p class="text-xl font-bold">AI Engineer</p>
+              <p class="text-sm text-slate-400">Match 87%</p>
+            </div>
+            <span class="text-4xl"><i class="fa-solid fa-robot text-brand-400"></i></span>
+          </div>
+          <div class="mt-4 h-2 rounded-full bg-slate-700">
+            <div class="progress-bar h-2 rounded-full bg-gradient-to-r from-brand-500 to-violet-500" style="width: 87%"></div>
+          </div>
+          <div class="mt-6 space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-slate-400">Interest match</span><span class="font-semibold text-brand-300">92%</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Skill match</span><span class="font-semibold text-brand-300">80%</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Education</span><span class="font-semibold text-brand-300">85%</span></div>
+          </div>
+          <div class="mt-6 pt-6 border-t border-slate-700 text-sm text-slate-300">
+            <p class="mb-2 font-semibold text-slate-200">Next steps</p>
+            <ul class="space-y-1.5">
+              <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Python — review</li>
+              <li><i class="fa-solid fa-circle text-brand-400 text-[8px] align-middle mr-2"></i> Machine Learning — in progress</li>
+              <li><i class="fa-regular fa-circle text-slate-500 mr-2"></i>Deep Learning — not started</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+  <div class="rounded-3xl bg-gradient-to-br from-brand-600 to-violet-700 text-white p-10 sm:p-14 text-center shadow-soft-lg">
+    <h2 class="text-3xl font-bold">Ready to find your path?</h2>
+    <p class="mt-3 text-brand-100 max-w-xl mx-auto">Join CareerPath AI, complete the assessment, and get your personalized career recommendations and learning roadmap.</p>
+    <div class="mt-8">
+      {% if user.is_authenticated %}
+      <a href="{% url 'assessment:start' %}" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-brand-700 font-semibold hover:bg-brand-50 transition">
+        Take the assessment <i class="fa-solid fa-arrow-right"></i>
+      </a>
+      {% else %}
+      <a href="{% url 'accounts:register' %}" class="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-brand-700 font-semibold hover:bg-brand-50 transition">
+        Create your account <i class="fa-solid fa-arrow-right"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

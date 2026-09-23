@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Sign in — CareerPath AI{% endblock %}
+{% block content %}
+<div class="min-h-[70vh] flex items-center justify-center px-4">
+  <div class="w-full max-w-md">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-soft p-8 fade-in">
+      <div class="text-center mb-6">
+        <span class="inline-grid place-items-center w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-violet-600 text-white text-xl mb-3">
+          <i class="fa-solid fa-route"></i>
+        </span>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Sign in to continue your career journey.</p>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-sm text-rose-700 dark:text-rose-300">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label for="id_username" class="input-label">Username</label>
+          <input type="text" name="username" id="id_username" required autofocus autocomplete="username" class="input-field" placeholder="yourusername">
+        </div>
+        <div>
+          <label for="id_password" class="input-label">Password</label>
+          <input type="password" name="password" id="id_password" required autocomplete="current-password" class="input-field" placeholder="••••••••">
+        </div>
+        <div class="flex items-center justify-between text-sm">
+          <label class="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+            <input type="checkbox" name="remember" class="rounded border-slate-300 dark:border-slate-700 accent-brand-600"> Remember me
+          </label>
+          <a href="#" class="text-brand-600 dark:text-brand-400 hover:underline">Forgot password?</a>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-soft shadow-brand-600/30 transition">
+          Sign in
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+        Don't have an account?
+        <a href="{% url 'accounts:register' %}" class="font-semibold text-brand-600 dark:text-brand-400 hover:underline">Create one</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

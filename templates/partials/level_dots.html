@@ -1,0 +1,9 @@
+{% comment %}
+  Render 5 dots for a 1-5 scaled value.
+  Usage: {% include "partials/level_dots.html" with value=some_integer %}
+{% endcomment %}
+<div class="flex items-center gap-1" title="{{ value }}/5">
+  {% for i in "12345" %}
+    <span class="w-1.5 h-1.5 rounded-full {% if forloop.counter <= value %}bg-brand-500{% else %}bg-slate-200 dark:bg-slate-700{% endif %}"></span>
+  {% endfor %}
+</div>

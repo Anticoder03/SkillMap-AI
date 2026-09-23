@@ -1,0 +1,6 @@
+Django==6.1.1
+djangorestframework==3.18.1
+python-dotenv==1.2.3
+# PostgreSQL driver - optional. The app runs on SQLite without it and
+# automatically switches to PostgreSQL when DATABASE_NAME is set.
+psycopg[binary]==3.3.6
