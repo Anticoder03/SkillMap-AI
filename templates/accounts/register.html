@@ -12,11 +12,20 @@
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Takes less than a minute.</p>
       </div>
 
+      {% if form.non_field_errors %}
+        <div class="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-sm text-rose-700 dark:text-rose-300">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+      {% endif %}
+
       <form method="post" class="space-y-4">
         {% csrf_token %}
         {% for field in form %}
           <div>
-            <label for="{{ field.id_for_label }}" class="input-label">{{ field.label }}</label>
+            <label for="{{ field.id_for_label }}" class="input-label">
+              {{ field.label }}
+              {% if not field.field.required %}<span class="text-slate-400 font-normal">(optional)</span>{% endif %}
+            </label>
             {{ field }}
             {% if field.help_text %}
               <p class="mt-1 text-xs text-slate-400">{{ field.help_text|safe }}</p>

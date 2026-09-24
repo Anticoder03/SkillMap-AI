@@ -5,13 +5,20 @@ from .base import AIProvider, AIProviderError
 class NvidiaProvider(AIProvider):
     name = "nvidia"
 
-    def __init__(self, api_key: str = "", model: str = "", timeout: int = 45):
+    def __init__(
+        self,
+        api_key: str = "",
+        model: str = "",
+        timeout: int = 45,
+        base_url: str = "https://integrate.api.nvidia.com/v1/chat/completions",
+    ):
         super().__init__(api_key=api_key, model=model or "deepseek-ai/deepseek-r1", timeout=timeout)
+        self.base_url = base_url
 
     def generate(self, prompt: str, **kwargs) -> str:
         if not self.api_key:
             raise AIProviderError("AI_API_KEY is not configured for the Nvidia provider.")
-        url = "https://integrate.api.nvidia.com/v1/chat/completions"
+        url = self.base_url
         payload = {
             "model": self.model,
             "messages": [{"role": "user", "content": prompt}],

@@ -1,0 +1,606 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maison Brew — Artisan Coffee</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+    :root {
+      --cream: #f5efe5;
+      --brown: #34251d;
+      --coffee: #6b4029;
+      --orange: #c76d36;
+      --muted: #8b7d70;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--brown);
+      background:
+        radial-gradient(circle at 78% 18%, rgba(199, 109, 54, .18), transparent 22%),
+        linear-gradient(135deg, #f8f2e9, #eee2d0);
+      font-family: "DM Sans", sans-serif;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .04;
+      z-index: 20;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+    }
+
+    header {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 30px 7vw;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--brown);
+      font-weight: 700;
+      letter-spacing: -.04em;
+      font-size: 1.25rem;
+    }
+
+    .logo-mark {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      color: white;
+      border-radius: 50%;
+      background: var(--coffee);
+      box-shadow: 0 8px 20px rgba(71, 42, 24, .2);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    nav a {
+      color: var(--brown);
+      text-decoration: none;
+      font-size: .9rem;
+      opacity: .75;
+      transition: .25s ease;
+    }
+
+    nav a:hover {
+      opacity: 1;
+      color: var(--orange);
+    }
+
+    .nav-button {
+      padding: 12px 20px;
+      color: white;
+      border-radius: 100px;
+      background: var(--brown);
+      opacity: 1;
+    }
+
+    .nav-button:hover {
+      color: white;
+      background: var(--orange);
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      min-height: calc(100vh - 100px);
+      padding: 30px 7vw 80px;
+    }
+
+    .content {
+      max-width: 610px;
+      animation: fadeUp .9s ease both;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 28px;
+      color: var(--orange);
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 34px;
+      height: 2px;
+      content: "";
+      background: var(--orange);
+    }
+
+    h1 {
+      max-width: 650px;
+      margin-bottom: 25px;
+      font-family: "Playfair Display", serif;
+      font-size: clamp(3.6rem, 7vw, 7.5rem);
+      font-weight: 600;
+      line-height: .88;
+      letter-spacing: -.08em;
+    }
+
+    h1 span {
+      color: var(--orange);
+      font-style: italic;
+    }
+
+    .intro {
+      max-width: 470px;
+      margin-bottom: 34px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .primary-button,
+    .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 0 25px;
+      border-radius: 100px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: .3s ease;
+    }
+
+    .primary-button {
+      color: white;
+      background: var(--orange);
+      box-shadow: 0 15px 30px rgba(199, 109, 54, .25);
+    }
+
+    .primary-button:hover {
+      transform: translateY(-4px);
+      background: var(--brown);
+    }
+
+    .secondary-button {
+      color: var(--brown);
+      border: 1px solid rgba(52, 37, 29, .18);
+    }
+
+    .secondary-button:hover {
+      background: rgba(255,255,255,.45);
+      transform: translateY(-4px);
+    }
+
+    .scene-wrapper {
+      position: relative;
+      height: min(650px, 70vh);
+      min-height: 480px;
+      animation: fadeIn 1.2s ease both;
+    }
+
+    #scene {
+      position: absolute;
+      inset: 0;
+      cursor: grab;
+    }
+
+    #scene:active {
+      cursor: grabbing;
+    }
+
+    .scene-label {
+      position: absolute;
+      right: 5%;
+      bottom: 7%;
+      z-index: 2;
+      width: 170px;
+      padding: 16px;
+      color: white;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 18px;
+      background: rgba(52, 37, 29, .65);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 45px rgba(50, 29, 14, .15);
+    }
+
+    .scene-label small {
+      display: block;
+      margin-bottom: 5px;
+      color: #e3b08c;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+    }
+
+    .scene-label strong {
+      font-size: 1.05rem;
+    }
+
+    .stats {
+      position: absolute;
+      left: 7vw;
+      bottom: 38px;
+      display: flex;
+      gap: 50px;
+      color: var(--muted);
+    }
+
+    .stat strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--brown);
+      font-family: "Playfair Display", serif;
+      font-size: 1.7rem;
+    }
+
+    .stat span {
+      font-size: .75rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 850px) {
+      header {
+        padding: 22px 6vw;
+      }
+
+      nav a:not(.nav-button) {
+        display: none;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        padding: 50px 6vw 120px;
+      }
+
+      h1 {
+        font-size: clamp(3.6rem, 18vw, 6rem);
+      }
+
+      .scene-wrapper {
+        height: 500px;
+        min-height: 400px;
+        margin-top: -20px;
+      }
+
+      .stats {
+        left: 6vw;
+        gap: 25px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .primary-button,
+      .secondary-button {
+        width: 100%;
+      }
+
+      .scene-wrapper {
+        height: 420px;
+      }
+
+      .stats {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        margin: -45px 6vw 30px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="noise"></div>
+
+  <header>
+    <a href="#" class="logo">
+      <span class="logo-mark">☕</span>
+      Maison Brew
+    </a>
+
+    <nav>
+      <a href="#story">Our story</a>
+      <a href="#menu">Menu</a>
+      <a href="#visit">Visit us</a>
+      <a href="#menu" class="nav-button">Order coffee</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="content">
+      <div class="eyebrow">Small batch. Big feeling.</div>
+
+      <h1>
+        Coffee made<br />
+        <span>beautifully.</span>
+      </h1>
+
+      <p class="intro">
+        A neighborhood cafe for slow mornings, bold espresso, and the kind
+        of conversations that last all afternoon.
+      </p>
+
+      <div class="actions">
+        <a href="#menu" class="primary-button">Explore our menu →</a>
+        <a href="#visit" class="secondary-button">Find a table</a>
+      </div>
+    </section>
+
+    <section class="scene-wrapper">
+      <div id="scene"></div>
+
+      <div class="scene-label">
+        <small>Today's pour</small>
+        <strong>Ethiopian Yirgacheffe</strong>
+      </div>
+    </section>
+  </main>
+
+  <div class="stats">
+    <div class="stat">
+      <strong>2018</strong>
+      <span>Established</span>
+    </div>
+    <div class="stat">
+      <strong>12</strong>
+      <span>Local roasts</span>
+    </div>
+    <div class="stat">
+      <strong>4.9★</strong>
+      <span>Community love</span>
+    </div>
+  </div>
+
+  <script>
+    const container = document.getElementById("scene");
+
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(
+      35,
+      container.clientWidth / container.clientHeight,
+      0.1,
+      100
+    );
+
+    camera.position.set(0, 1.8, 8);
+
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true
+    });
+
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.minPolarAngle = Math.PI / 2.5;
+    controls.maxPolarAngle = Math.PI / 1.8;
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 1.1;
+
+    const ambient = new THREE.AmbientLight(0xffe8cc, 2.3);
+    scene.add(ambient);
+
+    const keyLight = new THREE.DirectionalLight(0xffc18b, 4);
+    keyLight.position.set(4, 7, 5);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
+
+    const warmLight = new THREE.PointLight(0xff7838, 3, 12);
+    warmLight.position.set(-4, 1, 2);
+    scene.add(warmLight);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Saucer
+    const saucer = new THREE.Mesh(
+      new THREE.CylinderGeometry(2.1, 1.85, .18, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0xd7bca1,
+        roughness: .45,
+        metalness: .05
+      })
+    );
+
+    saucer.position.y = -1.45;
+    saucer.castShadow = true;
+    saucer.receiveShadow = true;
+    group.add(saucer);
+
+    // Cup body
+    const cup = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.45, 1.15, 1.65, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0xf6eee1,
+        roughness: .38
+      })
+    );
+
+    cup.position.y = -.45;
+    cup.castShadow = true;
+    cup.receiveShadow = true;
+    group.add(cup);
+
+    // Coffee surface
+    const coffee = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.29, 1.29, .055, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0x4d2818,
+        roughness: .23
+      })
+    );
+
+    coffee.position.y = .385;
+    group.add(coffee);
+
+    // Cup handle
+    const handle = new THREE.Mesh(
+      new THREE.TorusGeometry(.67, .16, 24, 64, Math.PI * 1.65),
+      new THREE.MeshStandardMaterial({
+        color: 0xf6eee1,
+        roughness: .38
+      })
+    );
+
+    handle.rotation.z = Math.PI / 2;
+    handle.position.set(1.43, -.43, 0);
+    handle.castShadow = true;
+    group.add(handle);
+
+    // Decorative stripe
+    const stripe = new THREE.Mesh(
+      new THREE.TorusGeometry(1.32, .035, 16, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0xc76d36,
+        roughness: .3
+      })
+    );
+
+    stripe.rotation.x = Math.PI / 2;
+    stripe.position.y = -.1;
+    group.add(stripe);
+
+    // Floating coffee beans
+    const beanGeometry = new THREE.SphereGeometry(.13, 20, 12);
+    const beanMaterial = new THREE.MeshStandardMaterial({
+      color: 0x5d321f,
+      roughness: .6
+    });
+
+    const beans = [];
+
+    for (let i = 0; i < 12; i++) {
+      const bean = new THREE.Mesh(beanGeometry, beanMaterial);
+      const angle = (i / 12) * Math.PI * 2;
+      const radius = 2.6 + Math.random() * .8;
+
+      bean.position.set(
+        Math.cos(angle) * radius,
+        -0.3 + Math.random() * 3,
+        Math.sin(angle) * radius * .45
+      );
+
+      bean.scale.set(.7, 1.35, .45);
+      bean.rotation.set(
+        Math.random(),
+        Math.random(),
+        Math.random()
+      );
+
+      bean.castShadow = true;
+      scene.add(bean);
+      beans.push(bean);
+    }
+
+    // Ground shadow
+    const shadow = new THREE.Mesh(
+      new THREE.CircleGeometry(2.7, 64),
+      new THREE.MeshBasicMaterial({
+        color: 0x6a4029,
+        transparent: true,
+        opacity: .12
+      })
+    );
+
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = -1.6;
+    shadow.scale.set(1.2, .55, 1);
+    scene.add(shadow);
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      const time = performance.now() * .001;
+
+      group.rotation.y = Math.sin(time * .35) * .12;
+      group.position.y = Math.sin(time * 1.2) * .08;
+
+      beans.forEach((bean, index) => {
+        bean.rotation.y += .006 + index * .0002;
+        bean.position.y += Math.sin(time * .8 + index) * .0007;
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    function resize() {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    }
+
+    window.addEventListener("resize", resize);
+  </script>
+</body>
+</html>

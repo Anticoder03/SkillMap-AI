@@ -117,14 +117,21 @@ def build_fallback_roadmap_data(career: Career, user: User | None = None) -> dic
     }
 
 
-@transaction.atomic
 def generate_roadmap(user: User, career: Career, force_refresh: bool = False):
-    """Create or replace the user's roadmap for a career and return it."""
+    """Create or replace the user's roadmap for a career and return it.
+
+    Deliberately NOT wrapped in a single long transaction: AI + SerpAPI calls
+    can take minutes, and holding the SQLite write lock across that time makes
+    every other writer in the app fail with "database is locked". Network work
+    runs outside any transaction; only the actual DB writes are atomic.
+    """
     from roadmap.models import Roadmap, RoadmapPhase, RoadmapTask
 
     # Get (or generate) the analysis first so the roadmap reflects it.
+    # analyze_career performs its own cached, short transaction.
     analysis = analyze_career(user, career, force_refresh=force_refresh)
 
+    # ---- Network phase: AI roadmap proposal (no DB transaction held). ----
     data = None
     try:
         provider = get_provider()
@@ -147,41 +154,45 @@ def generate_roadmap(user: User, career: Career, force_refresh: bool = False):
     if not total_weeks:
         total_weeks = len(data["phases"]) * 4
 
-    roadmap, _created = Roadmap.objects.update_or_create(
-        user=user,
-        career=career,
-        defaults={
-            "title": data["title"],
-            "description": data["description"] or f"Personalized learning plan toward {career.title}.",
-            "duration_weeks": total_weeks,
-        },
-    )
+    # ---- Short DB-write transaction (fast; no network inside). ----
+    with transaction.atomic():
+        roadmap, _created = Roadmap.objects.update_or_create(
+            user=user,
+            career=career,
+            defaults={
+                "title": data["title"],
+                "description": data["description"] or f"Personalized learning plan toward {career.title}.",
+                "duration_weeks": total_weeks,
+            },
+        )
 
-    # Replace phases/tasks to keep them in sync with the latest generation.
-    roadmap.phases.all().delete()
-    for order, phase_data in enumerate(data["phases"]):
-        phase = RoadmapPhase.objects.create(
-            roadmap=roadmap,
-            title=phase_data["title"],
-            description=phase_data["description"],
-            order=order,
-            duration_weeks=phase_data["duration_weeks"],
-        )
-        RoadmapTask.objects.bulk_create(
-            [
-                RoadmapTask(
-                    phase=phase,
-                    title=task_title,
-                    description="",
-                    estimated_hours=DEFAULT_HOURS_PER_TASK,
-                    order=idx,
-                )
-                for idx, task_title in enumerate(phase_data["tasks"])
-            ]
-        )
+        # Replace phases/tasks to keep them in sync with the latest generation.
+        roadmap.phases.all().delete()
+        for order, phase_data in enumerate(data["phases"]):
+            phase = RoadmapPhase.objects.create(
+                roadmap=roadmap,
+                title=phase_data["title"],
+                description=phase_data["description"],
+                order=order,
+                duration_weeks=phase_data["duration_weeks"],
+            )
+            RoadmapTask.objects.bulk_create(
+                [
+                    RoadmapTask(
+                        phase=phase,
+                        title=task_title,
+                        description="",
+                        estimated_hours=DEFAULT_HOURS_PER_TASK,
+                        order=idx,
+                    )
+                    for idx, task_title in enumerate(phase_data["tasks"])
+                ]
+            )
 
     # Attach a validated, real learning resource to every task (AI-first,
     # curated fallback). Never lets a roadmap return without resources.
+    # Enrichment does all network lookups before its single bulk_update, so it
+    # does not hold a write lock across network calls either.
     try:
         resource_finder.enrich_roadmap_with_resources(user, career, roadmap)
     except Exception as exc:  # noqa: BLE001 - enrichment must never break the roadmap

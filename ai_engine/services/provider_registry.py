@@ -28,11 +28,17 @@ def get_provider() -> AIProvider:
     module = importlib.import_module(module_path)
     provider_cls = getattr(module, class_name)
 
-    return provider_cls(
-        api_key=getattr(settings, "AI_API_KEY", ""),
-        model=getattr(settings, "AI_MODEL", None) or models.get(name, ""),
-        timeout=getattr(settings, "AI_TIMEOUT_SECONDS", 45),
-    )
+    kwargs = {
+        "api_key": getattr(settings, "AI_API_KEY", ""),
+        "model": getattr(settings, "AI_MODEL", None) or models.get(name, ""),
+        "timeout": getattr(settings, "AI_TIMEOUT_SECONDS", 45),
+    }
+    if name == "nvidia":
+        kwargs["base_url"] = getattr(
+            settings, "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1/chat/completions"
+        )
+
+    return provider_cls(**kwargs)
 
 
 def provider_is_configured() -> bool:

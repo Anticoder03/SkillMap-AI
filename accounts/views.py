@@ -2,7 +2,6 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
@@ -10,7 +9,12 @@ from django.views.decorators.http import require_POST
 
 from assessment.models import Interest, Skill, UserInterest, UserSkill
 
-from .forms import RegistrationForm, UserForm, UserProfileForm
+from .forms import (
+    RegistrationForm,
+    StyledPasswordChangeForm,
+    UserForm,
+    UserProfileForm,
+)
 from .services import build_dashboard_context, profile_completeness
 
 
@@ -62,13 +66,13 @@ class UserLogoutView(LogoutView):
 @login_required
 def change_password(request):
     if request.method == "POST":
-        form = PasswordChangeForm(request.user, request.POST)
+        form = StyledPasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Your password was updated successfully.")
             return redirect("accounts:profile")
     else:
-        form = PasswordChangeForm(request.user)
+        form = StyledPasswordChangeForm(request.user)
     return render(request, "accounts/change_password.html", {"form": form})
 
 

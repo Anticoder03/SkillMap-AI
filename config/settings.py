@@ -41,8 +41,8 @@ SECRET_KEY = os.getenv("SECRET_KEY") or get_random_secret_key()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool("DEBUG", True)
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if host.strip()]
-
+# ALLOWED_HOSTS = ["*","192.168.10.12",host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",") if host.strip()]
+ALLOWED_HOSTS = ["*","192.168.10.12"]
 # Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -100,6 +100,13 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
+        "OPTIONS": {
+            # Busy timeout so concurrent readers/writers wait instead of erroring.
+            "timeout": 30,
+            # WAL lets readers proceed while a writer is active, and makes
+            # short-lived write locks far less likely to collide.
+            "init_command": "PRAGMA journal_mode=WAL;",
+        },
     }
 }
 
@@ -175,11 +182,18 @@ AI_PROVIDERS = {
 }
 
 AI_MODELS = {
-    "gemini": "gemini-2.0-flash",
+    "gemini": "gemini-3.6-flash",
     "openai": "gpt-4o-mini",
     "nvidia": "deepseek-ai/deepseek-r1",
     "ollama": "llama3.2",
 }
+
+# NVIDIA NIM endpoint. Defaults to the hosted build.nvidia.com endpoint; point
+# it at a self-hosted NIM container (e.g. http://localhost:8000/v1) to run
+# Nemotron locally.
+NVIDIA_BASE_URL = os.getenv(
+    "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1/chat/completions"
+).strip()
 
 # Google Search (SerpAPI) — used to find live learning resources for roadmap
 # tasks. Optional: without a key, resource lookup falls back to AI/curated.

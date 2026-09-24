@@ -179,10 +179,23 @@ AI usage happens at three points — the **career analysis**, the **roadmap plan
 
 Defaults (in `config/settings.py`):
 
-- Gemini → `gemini-2.0-flash`
+- Gemini → `gemini-3.6-flash`
 - OpenAI → `gpt-4o-mini`
 - NVIDIA → `deepseek-ai/deepseek-r1`
 - Ollama → `llama3.2` (run locally: `ollama serve` with the model pulled)
+
+> **Using NVIDIA NIM / Nemotron?** Point `AI_PROVIDER=nvidia`, set
+> `AI_API_KEY=nvapi-...` and `AI_MODEL` to your model id. `NVIDIA_BASE_URL`
+> switches between hosted NIM (default) and a self-hosted NIM container.
+> Full guide: [`docs/nvidia_nim_integration.md`](docs/nvidia_nim_integration.md).
+
+## Presentation & User Manual
+
+- Slide deck: [`docs/CareerPath_AI_Presentation.pptx`](docs/CareerPath_AI_Presentation.pptx)
+- User manual (PDF): [`docs/CareerPath_AI_User_Manual.pdf`](docs/CareerPath_AI_User_Manual.pdf)
+
+Regenerate both with `docs/generate_presentation.py` and
+`docs/generate_user_manual.py` (requires `pip install -r requirements-docs.txt`).
 
 ## Recommendation Weights
 

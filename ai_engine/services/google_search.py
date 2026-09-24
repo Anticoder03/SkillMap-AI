@@ -81,11 +81,14 @@ def _search(engine: str, query: str, num: int | None, timeout: int | None) -> li
     params = {
         "api_key": api_key,
         "engine": engine,
-        "q": query,
-        "hl": "en",
-        "gl": "us",
-        "num": str(min(num or getattr(settings, "SERPAPI_RESULTS_NUM", 5), 10)),
     }
+    if engine == "youtube":
+        params["search_query"] = query  # YouTube engine uses search_query, not q
+    else:
+        params["q"] = query
+    params["hl"] = "en"
+    params["gl"] = "us"
+    params["num"] = str(min(num or getattr(settings, "SERPAPI_RESULTS_NUM", 5), 10))
     location = getattr(settings, "SERPAPI_LOCATION", "")
     if location:
         params["location"] = location

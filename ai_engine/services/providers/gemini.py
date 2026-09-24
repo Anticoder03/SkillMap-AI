@@ -6,7 +6,7 @@ class GeminiProvider(AIProvider):
     name = "gemini"
 
     def __init__(self, api_key: str = "", model: str = "", timeout: int = 45):
-        super().__init__(api_key=api_key, model=model or "gemini-2.0-flash", timeout=timeout)
+        super().__init__(api_key=api_key, model=model or "gemini-3.6-flash", timeout=timeout)
 
     def generate(self, prompt: str, **kwargs) -> str:
         if not self.api_key:
